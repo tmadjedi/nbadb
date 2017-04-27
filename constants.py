@@ -1,3 +1,5 @@
+#TODO split out message and action codes into two files
+
 EVENT_MESSAGE_TYPE = 2
 EVENT_ACTION_TYPE = 3
 
