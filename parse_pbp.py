@@ -27,7 +27,7 @@ def new_player(box, pid, tid):
 events = data['resultSets'][0]['rowSet']
 box = {}
 played = {}
-played_in_quarter = []
+unlogged_time = []
 
 # range hardcoded for this pbp file
 for i in range(495):
@@ -39,33 +39,28 @@ for i in range(495):
     # resolve time totals at ends of periods
     if message == 13:
         for player in played:
-            if played[player]["state"] == "in":
+            if player in unlogged_time:
                 delta = datetime.strptime(played[player]["last"], fmt) - datetime.strptime("00:00", fmt)
                 played[player]["total"] += delta.seconds
                 played[player]["last"] = "12:00"
                 played[player]["state"] = "out"
-            elif played[player]["state"] == "out" and player in played_in_quarter:
-                delta = datetime.strptime("12:00", fmt) - datetime.strptime("00:00", fmt)
-                played[player]["total"] += delta.seconds
-                played[player]["last"] = "12:00"
             else:
                 played[player]["last"] = "12:00"
 
-        played_in_quarter = []
-        print("end of quarter", played[203500])
+        unlogged_time = []
 
     # move on if this isn't a player event
     if event[c.PERSON_1_TYPE] not in [c.HOME_PLAYER, c.AWAY_PLAYER]:
         continue
 
     if event[c.PLAYER_1_ID]:
-        played_in_quarter.append(event[c.PLAYER_1_ID])
+        unlogged_time.append(event[c.PLAYER_1_ID])
 
     if event[c.PLAYER_2_ID]:
-        played_in_quarter.append(event[c.PLAYER_2_ID])
+        unlogged_time.append(event[c.PLAYER_2_ID])
 
     if event[c.PLAYER_3_ID]:
-        played_in_quarter.append(event[c.PLAYER_3_ID])
+        unlogged_time.append(event[c.PLAYER_3_ID])
 
     # add players if they aren't already there
     for j in [c.PLAYER_1_ID, c.PLAYER_2_ID, c.PLAYER_3_ID]:
@@ -139,15 +134,15 @@ for i in range(495):
             played[event[c.PLAYER_1_ID]] = { "last" : event[c.PERIOD_TIME],
                                              "state" : "out",
                                              "total" : delta.seconds }
-            played_in_quarter = list(set(played_in_quarter))
-            played_in_quarter.remove(event[c.PLAYER_1_ID])
+            unlogged_time = list(set(unlogged_time))
+            unlogged_time.remove(event[c.PLAYER_1_ID])
         else:
             delta = datetime.strptime(played[event[c.PLAYER_1_ID]]["last"], fmt) - datetime.strptime(event[c.PERIOD_TIME], fmt)
             played[event[c.PLAYER_1_ID]]["total"] += delta.seconds
             played[event[c.PLAYER_1_ID]]["last"] = event[c.PERIOD_TIME]
             played[event[c.PLAYER_1_ID]]["state"] = "out"
-            played_in_quarter = list(set(played_in_quarter))
-            played_in_quarter.remove(event[c.PLAYER_1_ID])
+            unlogged_time = list(set(unlogged_time))
+            unlogged_time.remove(event[c.PLAYER_1_ID])
 
 for player in played:
     box[player]["timeplayed"] = played[player]["total"]
