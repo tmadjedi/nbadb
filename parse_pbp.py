@@ -1,4 +1,5 @@
 import json, constants as c
+from datetime import datetime
 
 file = open('../0041600162_pbp.json')
 data = json.load(file)
@@ -25,16 +26,46 @@ def new_player(box, pid, tid):
 
 events = data['resultSets'][0]['rowSet']
 box = {}
+played = {}
+played_in_quarter = []
 
 # range hardcoded for this pbp file
 for i in range(495):
     event = events[i]
     message = event[c.EVENT_MESSAGE_TYPE]
     ldescr = str(event[c.HOME_DESCRIPTION]) + str(event[c.NEUTRAL_DESCRIPTION]) + str(event[c.AWAY_DESCRIPTION])
+    fmt = "%M:%S"
+
+    # resolve time totals at ends of periods
+    if message == 13:
+        for player in played:
+            if played[player]["state"] == "in":
+                delta = datetime.strptime(played[player]["last"], fmt) - datetime.strptime("00:00", fmt)
+                played[player]["total"] += delta.seconds
+                played[player]["last"] = "12:00"
+                played[player]["state"] = "out"
+            elif played[player]["state"] == "out" and player in played_in_quarter:
+                delta = datetime.strptime("12:00", fmt) - datetime.strptime("00:00", fmt)
+                played[player]["total"] += delta.seconds
+                played[player]["last"] = "12:00"
+            else:
+                played[player]["last"] = "12:00"
+
+        played_in_quarter = []
+        print("end of quarter", played[203500])
 
     # move on if this isn't a player event
     if event[c.PERSON_1_TYPE] not in [c.HOME_PLAYER, c.AWAY_PLAYER]:
         continue
+
+    if event[c.PLAYER_1_ID]:
+        played_in_quarter.append(event[c.PLAYER_1_ID])
+
+    if event[c.PLAYER_2_ID]:
+        played_in_quarter.append(event[c.PLAYER_2_ID])
+
+    if event[c.PLAYER_3_ID]:
+        played_in_quarter.append(event[c.PLAYER_3_ID])
 
     # add players if they aren't already there
     for j in [c.PLAYER_1_ID, c.PLAYER_2_ID, c.PLAYER_3_ID]:
@@ -79,5 +110,47 @@ for i in range(495):
     elif message == 4:
         box[event[c.PLAYER_1_ID]]["dreb" if event[c.EVENT_ACTION_TYPE] == 0 else "oreb"] += 1
 
+    # turnovers
+    elif message == 5:
+        box[event[c.PLAYER_1_ID]]["to"] += 1
+
+        if event[c.PLAYER_2_ID]:
+            box[event[c.PLAYER_2_ID]]["stl"] += 1
+
+    # fouls
+    elif message == 6:
+        box[event[c.PLAYER_1_ID]]["pf"] += 1
+
+    # substitutions
+    elif message == 8:
+        # sub in
+        if not played.get(event[c.PLAYER_2_ID]):
+            played[event[c.PLAYER_2_ID]] = { "last" : event[c.PERIOD_TIME],
+                                             "state" : "in",
+                                             "total" : 0 }
+
+        else:
+            played[event[c.PLAYER_2_ID]]["last"] = event[c.PERIOD_TIME]
+            played[event[c.PLAYER_2_ID]]["state"] = "in"
+
+        # sub out
+        if not played.get(event[c.PLAYER_1_ID]):
+            delta = datetime.strptime("12:00", fmt) - datetime.strptime(event[c.PERIOD_TIME], fmt)
+            played[event[c.PLAYER_1_ID]] = { "last" : event[c.PERIOD_TIME],
+                                             "state" : "out",
+                                             "total" : delta.seconds }
+            played_in_quarter = list(set(played_in_quarter))
+            played_in_quarter.remove(event[c.PLAYER_1_ID])
+        else:
+            delta = datetime.strptime(played[event[c.PLAYER_1_ID]]["last"], fmt) - datetime.strptime(event[c.PERIOD_TIME], fmt)
+            played[event[c.PLAYER_1_ID]]["total"] += delta.seconds
+            played[event[c.PLAYER_1_ID]]["last"] = event[c.PERIOD_TIME]
+            played[event[c.PLAYER_1_ID]]["state"] = "out"
+            played_in_quarter = list(set(played_in_quarter))
+            played_in_quarter.remove(event[c.PLAYER_1_ID])
+
+for player in played:
+    box[player]["timeplayed"] = played[player]["total"]
+
 for player in box:
-    print(player, box[player]["fgm"], box[player]["fga"], box[player]["3pm"], box[player]["3pa"], box[player]["oreb"], box[player]["dreb"], box[player]["ast"], box[player]["blk"])
+    print(player, box[player]["fgm"], box[player]["fga"], box[player]["3pm"], box[player]["3pa"], box[player]["oreb"], box[player]["dreb"], box[player]["ast"], box[player]["blk"], box[player]["timeplayed"])
