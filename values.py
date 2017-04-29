@@ -1,0 +1,18 @@
+# values
+
+# eventmessagetype
+FIELD_GOAL = 1
+FIELD_GOAL_MISS = 2
+FREE_THROW = 3
+REBOUND = 4
+TURNOVER = 5
+FOUL = 6
+VIOLATION = 7
+SUBSTITUTION = 8
+TIMEOUT = 9
+JUMP_BALL = 10
+PERIOD_END = 13
+
+# person_x_type
+HOME_PLAYER = 4
+AWAY_PLAYER = 5
