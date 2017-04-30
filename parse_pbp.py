@@ -21,8 +21,60 @@ def new_player(box, pid, tid):
                 "pf" : 0,
                 "pts" : 0}
 
+def field_goal(box, event):
+    box[event[f.PLAYER_1_ID]]["fgm"] += 1
+    box[event[f.PLAYER_1_ID]]["fga"] += 1
+
+    # check if it's a 3 pointer
+    if "3PT" in ldescr:
+        box[event[f.PLAYER_1_ID]]["3pm"] += 1
+        box[event[f.PLAYER_1_ID]]["3pa"] += 1
+
+    # check if the shot was assisted
+    if event[f.PLAYER_2_ID]:
+        box[event[f.PLAYER_2_ID]]["ast"] += 1
+    
+def field_goal_miss(box, event):
+    box[event[f.PLAYER_1_ID]]["fga"] += 1
+
+    # check if it's a 3 pointer
+    if "3PT" in ldescr:
+        box[event[f.PLAYER_1_ID]]["3pa"] += 1
+
+    # check if it was blocked
+    if event[f.PLAYER_3_ID]:
+        box[event[f.PLAYER_3_ID]]["blk"] += 1
+    
+def free_throw(box, event):
+    box[event[f.PLAYER_1_ID]]["fta"] += 1
+
+    # this field is empty if the shot was missed
+    if event[f.SCORE]:
+        box[event[f.PLAYER_1_ID]]["ftm"] += 1
+
+def rebound(box, event):
+    box[event[f.PLAYER_1_ID]]["dreb" if event[f.EVENT_ACTION_TYPE] == 0 else "oreb"] += 1
+
+def turnover(box, event):
+    box[event[f.PLAYER_1_ID]]["to"] += 1
+
+    if event[f.PLAYER_2_ID]:
+        box[event[f.PLAYER_2_ID]]["stl"] += 1
+
+def foul(box, event):
+    box[event[f.PLAYER_1_ID]]["pf"] += 1
+
 file = open('../0041600162_pbp.json')
 data = json.load(file)
+
+log_event = {
+    v.FIELD_GOAL : field_goal,
+    v.FIELD_GOAL_MISS : field_goal_miss,
+    v.FREE_THROW : free_throw,
+    v.REBOUND : rebound,
+    v.TURNOVER : turnover,
+    v.FOUL : foul
+}
 
 box = {}
 played = {} # per player - total time, last sub time, current state (in/out)
@@ -62,63 +114,18 @@ for i in range(len(events)):
     if event[f.PLAYER_2_ID]:
         unlogged_time.append(event[f.PLAYER_2_ID])
 
-        if event[f.PERSON_1_TYPE] in [v.HOME_PLAYER, v.AWAY_PLAYER] and not box.get(event[f.PLAYER_2_ID]):
+        if event[f.PERSON_2_TYPE] in [v.HOME_PLAYER, v.AWAY_PLAYER] and not box.get(event[f.PLAYER_2_ID]):
             new_player(box, event[f.PLAYER_2_ID], event[f.PLAYER_2_TEAM_ID])
 
     if event[f.PLAYER_3_ID]:
         unlogged_time.append(event[f.PLAYER_3_ID])
 
-        if event[f.PERSON_1_TYPE] in [v.HOME_PLAYER, v.AWAY_PLAYER] and not box.get(event[f.PLAYER_3_ID]):
+        if event[f.PERSON_3_TYPE] in [v.HOME_PLAYER, v.AWAY_PLAYER] and not box.get(event[f.PLAYER_3_ID]):
             new_player(box, event[f.PLAYER_3_ID], event[f.PLAYER_3_TEAM_ID])
 
-    # field goal make
-    if message == v.FIELD_GOAL:
-        box[event[f.PLAYER_1_ID]]["fgm"] += 1
-        box[event[f.PLAYER_1_ID]]["fga"] += 1
-
-        # check if it's a 3 pointer
-        if "3PT" in ldescr:
-            box[event[f.PLAYER_1_ID]]["3pm"] += 1
-            box[event[f.PLAYER_1_ID]]["3pa"] += 1
-
-        # check if the shot was assisted
-        if event[f.PLAYER_2_ID]:
-            box[event[f.PLAYER_2_ID]]["ast"] += 1
-
-    # field goal miss
-    elif message == v.FIELD_GOAL_MISS:
-        box[event[f.PLAYER_1_ID]]["fga"] += 1
-
-        # check if it's a 3 pointer
-        if "3PT" in ldescr:
-            box[event[f.PLAYER_1_ID]]["3pa"] += 1
-
-        # check if it was blocked
-        if event[f.PLAYER_3_ID]:
-            box[event[f.PLAYER_3_ID]]["blk"] += 1
-
-    # free throw
-    elif message == v.FREE_THROW:
-        box[event[f.PLAYER_1_ID]]["fta"] += 1
-
-        # this field is empty if the shot was missed
-        if event[f.SCORE]:
-            box[event[f.PLAYER_1_ID]]["ftm"] += 1
-
-    # rebounds
-    elif message == v.REBOUND:
-        box[event[f.PLAYER_1_ID]]["dreb" if event[f.EVENT_ACTION_TYPE] == 0 else "oreb"] += 1
-
-    # turnovers
-    elif message == v.TURNOVER:
-        box[event[f.PLAYER_1_ID]]["to"] += 1
-
-        if event[f.PLAYER_2_ID]:
-            box[event[f.PLAYER_2_ID]]["stl"] += 1
-
-    # fouls
-    elif message == v.FOUL:
-        box[event[f.PLAYER_1_ID]]["pf"] += 1
+    # log the event
+    if message in log_event.keys():
+        log_event[message](box, event)
 
     # substitutions
     # the substituion logic is not perfect. the potential for a player to play an entire
@@ -126,8 +133,9 @@ for i in range(len(events)):
     # an event row. unlogged_time is used to catch players in these cases -- for every
     # event a player participates in, they get an row in unlogged_time. players entry
     # is removed when they sub out, otherwise when a period ends, 12 minutes will
-    # be added to the player's total.
-    elif message == v.SUBSTITUTION:
+    # be added to the player's total. if a player is in for an entire quarter and isn't
+    # part of any event, the time will be missed
+    if message == v.SUBSTITUTION:
         # sub in
         if not played.get(event[f.PLAYER_2_ID]):
             played[event[f.PLAYER_2_ID]] = { "last" : event[f.PERIOD_TIME],
