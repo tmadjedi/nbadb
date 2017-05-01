@@ -83,13 +83,11 @@ events = data['resultSets'][0]['rowSet']
 fmt = "%M:%S"
 
 # go through all game events
-for i in range(len(events)):
-    event = events[i]
-    message = event[f.EVENT_MESSAGE_TYPE]
+for event in events:
     ldescr = str(event[f.HOME_DESCRIPTION]) + str(event[f.NEUTRAL_DESCRIPTION]) + str(event[f.AWAY_DESCRIPTION])
 
     # resolve time totals at ends of periods
-    if message == v.PERIOD_END:
+    if event[f.EVENT_MESSAGE_TYPE] == v.PERIOD_END:
         for player in played:
             if player in unlogged_time:
                 delta = datetime.strptime(played[player]["last"], fmt) - datetime.strptime("00:00", fmt)
@@ -124,8 +122,8 @@ for i in range(len(events)):
             new_player(box, event[f.PLAYER_3_ID], event[f.PLAYER_3_TEAM_ID])
 
     # log the event
-    if message in log_event.keys():
-        log_event[message](box, event)
+    if event[f.EVENT_MESSAGE_TYPE] in log_event.keys():
+        log_event[event[f.EVENT_MESSAGE_TYPE]](box, event)
 
     # substitutions
     # the substituion logic is not perfect. the potential for a player to play an entire
@@ -135,7 +133,7 @@ for i in range(len(events)):
     # is removed when they sub out, otherwise when a period ends, 12 minutes will
     # be added to the player's total. if a player is in for an entire quarter and isn't
     # part of any event, the time will be missed
-    if message == v.SUBSTITUTION:
+    if event[f.EVENT_MESSAGE_TYPE] == v.SUBSTITUTION:
         # sub in
         if not played.get(event[f.PLAYER_2_ID]):
             played[event[f.PLAYER_2_ID]] = { "last" : event[f.PERIOD_TIME],
