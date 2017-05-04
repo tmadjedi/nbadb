@@ -26,17 +26,12 @@ for root, dirs, files in os.walk(path):
         data = json.load(f)
         values = [tuple(x) for x in data['resultSets'][0]['rowSet']]
         
-        load_boxscore(cur, values)
-        log_load(cur, [file])
-        conn.commit()
-
-'''
         try:
             load_boxscore(cur, values)
             log_load(cur, file)
             conn.commit()
         except:
-            print("failed loading", file)'''
+            print("failed loading", file)
 
 cur.close()
 conn.close()
