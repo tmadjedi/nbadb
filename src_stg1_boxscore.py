@@ -1,58 +1,42 @@
-import json, psycopg2
+import json, psycopg2, os
 from psycopg2.extras import execute_values
 
-def create_boxscore(cur):
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS boxscore(
-            game_id CHAR(10),
-            team_id CHAR(10),
-            team_abbreviation CHAR(3),
-            team_city CHAR(32),
-            player_id INT,
-            player_name CHAR(64),
-            start_position CHAR(1),
-            comment CHAR(64),
-            min INTERVAL,
-            fgm INT,
-            fga INT,
-            fg_pct REAL,
-            fg3m INT,
-            fg3a INT,
-            fg3_pct REAL,
-            ftm INT,
-            fta INT,
-            ft_pct REAL,
-            oreb INT,
-            dreb INT,
-            reb INT,
-            ast INT,
-            stl INT,
-            blk INT,
-            tov INT,
-            pf INT,
-            pts INT,
-            plus_minus INT,
-            PRIMARY KEY (game_id, player_id))
-    """)
+def load_boxscore(cur, values):
+    execute_values(cur, """
+        INSERT INTO boxscore
+        VALUES %s""",
+        values)
 
-file = open('../0041600212_box.json')
-data = json.load(file)
-values = [tuple(x) for x in data['resultSets'][0]['rowSet']]
+def log_load(cur, file):
+    cur.execute("""
+        INSERT INTO loaded
+        VALUES (%s)""",
+        file)
 
 # password from .pgpass file
 conn = psycopg2.connect("dbname='nba' user='nba' host='localhost'")
 cur = conn.cursor()
+path = '../source_data/box/'
 
-# create table
-create_boxscore(cur)
-conn.commit()
+for root, dirs, files in os.walk(path):
+    for file in files:
+        print("loading", file)
 
-# insert values
-execute_values(cur, """
-    INSERT INTO boxscore
-    VALUES %s""",
-    values)
-conn.commit()
+        f = open(path + file)
+        data = json.load(f)
+        values = [tuple(x) for x in data['resultSets'][0]['rowSet']]
+        
+        load_boxscore(cur, values)
+        log_load(cur, [file])
+        conn.commit()
+
+'''
+        try:
+            load_boxscore(cur, values)
+            log_load(cur, file)
+            conn.commit()
+        except:
+            print("failed loading", file)'''
 
 cur.close()
 conn.close()
