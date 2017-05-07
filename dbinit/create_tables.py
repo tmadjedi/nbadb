@@ -1,8 +1,8 @@
 import psycopg2
 
-def create_boxscore(cur):
+def create_stg1_boxscore(cur):
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS boxscore(
+        CREATE TABLE IF NOT EXISTS stg1_boxscore(
             game_id CHAR(10),
             team_id CHAR(10),
             team_abbreviation CHAR(3),
@@ -34,15 +34,15 @@ def create_boxscore(cur):
             PRIMARY KEY (game_id, player_id))
     """)
 
-def create_loaded(cur):
+def create_stg1_loaded(cur):
       cur.execute("""
-          CREATE TABLE IF NOT EXISTS LOADED(
+          CREATE TABLE IF NOT EXISTS stg1_loaded(
               file_name CHAR(32) PRIMARY KEY)
           """)
 
 conn = psycopg2.connect("dbname='nba' user='nba' host='localhost'")
 cur = conn.cursor()
 
-create_boxscore(cur)
-create_loaded(cur)
+create_stg1_boxscore(cur)
+create_stg1_loaded(cur)
 conn.commit()
