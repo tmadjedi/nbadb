@@ -2,7 +2,7 @@ import json, psycopg2, os
 from psycopg2.extras import execute_values
 
 # path to source json files
-path = '../../source_data/box/'
+path = '../source_data/box/'
 
 # password from .pgpass file
 conn = psycopg2.connect("dbname='nba' user='nba' host='localhost'")
@@ -18,11 +18,11 @@ for root, dirs, files in os.walk(path):
             """,
             (file,))
 
-        if cur.fetchall():
+        if not cur.fetchall():
+            print("loading", file)
+        else:
             print(file, "already loaded")
             continue
-        else:
-            print("loading", file)
 
         f = open(path + file)
         data = json.load(f)
