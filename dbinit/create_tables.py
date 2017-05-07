@@ -40,10 +40,18 @@ def create_stg1_loaded(cur):
             file_name CHAR(32) PRIMARY KEY)
     """)
 
+def create_stg2_season(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS stg2_season(
+            season_type CHAR(3),
+            season_year CHAR(2),
+            PRIMARY KEY (season_type, season_year))
+    """)
+
 def create_stg2_game_result(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_game_result(
-            game_id CHAR(10),
+            game_id CHAR(10) PRIMARY KEY,
             winner_team_id CHAR(10),
             winner_pts INT,
             loser_team_id CHAR(10),
@@ -56,6 +64,7 @@ cur = conn.cursor()
 create_stg1_boxscore(cur)
 create_stg1_loaded(cur)
 create_stg2_game_result(cur)
+create_stg2_season(cur)
 conn.commit()
 
 cur.close()
