@@ -13,8 +13,8 @@ for root, dirs, files in os.walk(path):
 
         cur.execute("""
             SELECT *
-            FROM stg1_loaded
-            WHERE file_name = %s
+              FROM stg1_loaded
+             WHERE file_name = %s
             """,
             (file,))
 
