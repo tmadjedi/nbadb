@@ -1,2 +1,2 @@
 # nbadb
-NBA database built from play-by-play data pulled from stats.nba.com
+NBA database built from data pulled from stats.nba.com
