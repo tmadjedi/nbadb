@@ -58,6 +58,17 @@ def create_stg2_game_result(cur):
             loser_pts INT)
     """)
 
+def create_stg2_season_result(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS stg2_season_result(
+            team_id CHAR(10),
+            season_type CHAR(3),
+            season_year CHAR(2),
+            win_count INT,
+            loss_count INT,
+            PRIMARY KEY (season_type, season_year, team_id))
+    """)
+
 conn = psycopg2.connect("dbname='nba' user='nba' host='localhost'")
 cur = conn.cursor()
 
@@ -65,6 +76,7 @@ create_stg1_boxscore(cur)
 create_stg1_loaded(cur)
 create_stg2_game_result(cur)
 create_stg2_season(cur)
+create_stg2_season_result(cur)
 conn.commit()
 
 cur.close()
