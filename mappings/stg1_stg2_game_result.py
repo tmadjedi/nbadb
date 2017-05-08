@@ -25,7 +25,7 @@ cur.execute("""
         ON b.game_id = g1.game_id and g1.rank = 1
       JOIN game_team_rank g2
         ON b.game_id = g2.game_id and g2.rank = 2
-     ORDER BY game_id
+     ORDER BY b.game_id
         ON CONFLICT DO NOTHING
 """)
 
