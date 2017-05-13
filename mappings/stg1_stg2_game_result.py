@@ -14,10 +14,6 @@ cur.execute("""
           ORDER BY game_id)
     INSERT INTO stg2_game_result
     SELECT b.game_id
-          ,(SELECT s.season_id
-              FROM stg2_season s
-             WHERE to_char(s.season_type_code, 'FM9') = SUBSTRING(b.game_id FROM 3 FOR 1)
-               AND to_char(s.season_year % 100, 'FM09') = SUBSTRING(b.game_id FROM 4 FOR 2)) AS season_id
           ,g1.team_id AS winner_team_id
           ,g1.pts AS winner_pts
           ,g2.team_id AS loser_team_id
