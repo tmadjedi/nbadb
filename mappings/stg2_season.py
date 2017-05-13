@@ -12,7 +12,7 @@ season_types = {
 	4 : "Post Season"
 }
 
-seasons = [(x, season_type_descr[x], y) for x in season_types.keys() for y in season_years]
+seasons = [(x, season_types[x], y) for x in season_types.keys() for y in season_years]
 
 execute_values(cur, """
 	INSERT INTO stg2_season (season_type_code, season_type_descr, season_year)

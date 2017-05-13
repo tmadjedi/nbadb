@@ -45,7 +45,7 @@ def create_stg2_season(cur):
         CREATE TABLE IF NOT EXISTS stg2_season(
             season_id SERIAL PRIMARY KEY,
             season_type_code INT,
-            season_type_descr CHAR(64),
+            season_type_descr CHAR(32),
             season_year INT)
     """)
 
