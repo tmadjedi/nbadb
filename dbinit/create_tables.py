@@ -43,9 +43,10 @@ def create_stg1_loaded(cur):
 def create_stg2_season(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_season(
-            season_type CHAR(3),
-            season_year CHAR(2),
-            PRIMARY KEY (season_type, season_year))
+            season_id SERIAL PRIMARY KEY,
+            season_type_code INT,
+            season_type_descr CHAR(32),
+            season_year INT)
     """)
 
 def create_stg2_game_result(cur):

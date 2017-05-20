@@ -11,5 +11,4 @@ echo "Stage 1 to stage 2 mappings..."
 python mappings/stg1_stg2_game_result.py
 
 echo "Stage 2 to stage 2 mappings..."
-python mappings/stg2_stg2_season.py
 python mappings/stg2_stg2_season_result.py

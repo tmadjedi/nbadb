@@ -14,10 +14,10 @@ cur.execute("""
           ORDER BY game_id)
     INSERT INTO stg2_game_result
     SELECT b.game_id
-          ,g1.team_id as winner_team_id
-          ,g1.pts as winner_pts
-          ,g2.team_id as loser_team_id
-          ,g2.pts as loser_pts
+          ,g1.team_id AS winner_team_id
+          ,g1.pts AS winner_pts
+          ,g2.team_id AS loser_team_id
+          ,g2.pts AS loser_pts
       FROM 
            (SELECT DISTINCT game_id
               FROM stg1_boxscore) b
