@@ -27,7 +27,7 @@ cur.execute("""
           ,SUM(b.pf)
           ,SUM(b.pts)
           ,RANK() OVER (PARTITION BY s.season_id, b.team_id ORDER BY b.game_id)
-          ,RANK() OVER (PARTITION BY b.game_id ORDER BY SUM(b.pts) DESC)
+          ,(RANK() OVER (PARTITION BY b.game_id ORDER BY SUM(b.pts))) - 1
       FROM stg1_boxscore b
       JOIN stg2_season s
         ON SUBSTRING(b.game_id FROM 3 for 1) = to_char(s.season_type_code, 'FM9')
