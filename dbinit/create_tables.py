@@ -49,27 +49,6 @@ def create_stg2_season(cur):
             season_year INT)
     """)
 
-def create_stg2_game_result(cur):
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS stg2_game_result(
-            game_id CHAR(10) PRIMARY KEY,
-            winner_team_id CHAR(10),
-            winner_pts INT,
-            loser_team_id CHAR(10),
-            loser_pts INT)
-    """)
-
-def create_stg2_season_result(cur):
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS stg2_season_result(
-            team_id CHAR(10),
-            season_type CHAR(3),
-            season_year CHAR(2),
-            win_count INT,
-            loss_count INT,
-            PRIMARY KEY (season_type, season_year, team_id))
-    """)
-
 def create_stg2_team_boxscore(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team_boxscore(
