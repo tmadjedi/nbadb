@@ -43,7 +43,7 @@ def create_stg1_loaded(cur):
 def create_stg2_season(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_season(
-            season_id SERIAL PRIMARY KEY,
+            season_key SERIAL PRIMARY KEY,
             season_type_code INT,
             season_type_descr CHAR(32),
             season_year INT)
@@ -54,7 +54,7 @@ def create_stg2_team_boxscore(cur):
         CREATE TABLE IF NOT EXISTS stg2_team_boxscore(
             game_id CHAR(10),
             team_id CHAR(10),
-            season_id INT,
+            season_key INT,
             fgm INT,
             fga INT,
             fg_pct REAL,
