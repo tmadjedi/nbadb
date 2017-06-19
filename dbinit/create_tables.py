@@ -49,11 +49,18 @@ def create_stg2_season(cur):
             season_year INT)
     """)
 
+def create_stg2_team(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS stg2_team(
+            team_key SERIAL PRIMARY KEY,
+            team_id CHAR(10),
+            team_abbreviation CHAR(3))
+    """)
 def create_stg2_team_boxscore(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team_boxscore(
             game_id CHAR(10),
-            team_id CHAR(10),
+            team_key INT,
             season_key INT,
             fgm INT,
             fga INT,
@@ -75,14 +82,14 @@ def create_stg2_team_boxscore(cur):
             pts INT,
             game_of_season INT,
             game_rank INT,
-            PRIMARY KEY (game_id, team_id))
+            PRIMARY KEY (game_id, team_key))
     """)
 
 def create_stg2_team_season_boxscore(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team_season_boxscore(
-            team_id CHAR(10),
-            season_id INT,
+            team_key INT,
+            season_key INT,
             fgm INT,
             fga INT,
             fg_pct REAL,
@@ -101,7 +108,7 @@ def create_stg2_team_season_boxscore(cur):
             tov INT,
             pf INT,
             pts INT,
-            PRIMARY KEY (team_id, season_id))
+            PRIMARY KEY (team_key, season_key))
     """)
 
 conn = psycopg2.connect("dbname='nba' user='nba' host='localhost'")
@@ -110,6 +117,7 @@ cur = conn.cursor()
 create_stg1_boxscore(cur)
 create_stg1_loaded(cur)
 create_stg2_season(cur)
+create_stg2_team(cur)
 create_stg2_team_boxscore(cur)
 create_stg2_team_season_boxscore(cur)
 conn.commit()
