@@ -12,6 +12,7 @@ python mappings/src_stg1_boxscore.py
 
 echo "Stage 1 to stage 2 mappings..."
 python mappings/stg1_stg2_team.py
+python mappings/stg1_stg2_game.py
 python mappings/stg1_stg2_team_boxscore.py
 
 echo "Stage 2 to stage 2 mappings..."

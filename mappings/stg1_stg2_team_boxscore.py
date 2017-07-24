@@ -6,7 +6,7 @@ cur = conn.cursor()
 
 # find the rows that have changed
 cur.execute("""
-    SELECT b.game_id
+    SELECT g.game_key 
           ,t.team_key
           ,s.season_key
           ,SUM(b.fgm)
@@ -35,7 +35,9 @@ cur.execute("""
        AND SUBSTRING(b.game_id FROM 4 for 2) = to_char(s.season_year % 100, 'FM09')
       JOIN stg2_team t
         ON t.team_id = b.team_id
-     GROUP BY b.game_id, t.team_key, s.season_key
+      JOIN stg2_game g
+        ON g.game_id = b.game_id
+     GROUP BY g.game_key, b.game_id, t.team_key, s.season_key
     EXCEPT
     SELECT *
       FROM stg2_team_boxscore
@@ -45,7 +47,7 @@ new = cur.fetchall()
 execute_values(cur, """
     INSERT INTO stg2_team_boxscore
     VALUES %s
-        ON CONFLICT (game_id, team_key) DO
+        ON CONFLICT (game_key, team_key) DO
     UPDATE SET (fgm, fga, fg_pct, fg3m, fg3a, fg3_pct, ftm, fta, ft_pct, oreb, dreb, reb, ast, stl, blk, tov, pf, pts, game_of_season, game_rank) = 
     (EXCLUDED.fgm, EXCLUDED.fga, EXCLUDED.fg_pct, EXCLUDED.fg3m, EXCLUDED.fg3a, EXCLUDED.fg3_pct, EXCLUDED.ftm, EXCLUDED.fta, EXCLUDED.ft_pct, EXCLUDED.oreb, EXCLUDED.dreb, EXCLUDED.reb, EXCLUDED.ast, EXCLUDED.stl, EXCLUDED.blk, EXCLUDED.tov, EXCLUDED.pf, EXCLUDED.pts, EXCLUDED.game_of_season, EXCLUDED.game_rank)""",
     new)
