@@ -49,6 +49,13 @@ def create_stg2_season(cur):
             season_year INT)
     """)
 
+def create_stg2_game(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS stg2_game(
+            game_key SERIAL PRIMARY KEY,
+            game_id CHAR(10))
+    """)
+
 def create_stg2_team(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team(
@@ -59,7 +66,7 @@ def create_stg2_team(cur):
 def create_stg2_team_boxscore(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team_boxscore(
-            game_id CHAR(10),
+            game_key INT,
             team_key INT,
             season_key INT,
             fgm INT,
@@ -82,7 +89,7 @@ def create_stg2_team_boxscore(cur):
             pts INT,
             game_of_season INT,
             game_rank INT,
-            PRIMARY KEY (game_id, team_key))
+            PRIMARY KEY (game_key, team_key))
     """)
 
 def create_stg2_team_season_boxscore(cur):
@@ -117,6 +124,7 @@ cur = conn.cursor()
 create_stg1_boxscore(cur)
 create_stg1_loaded(cur)
 create_stg2_season(cur)
+create_stg2_game(cur)
 create_stg2_team(cur)
 create_stg2_team_boxscore(cur)
 create_stg2_team_season_boxscore(cur)
