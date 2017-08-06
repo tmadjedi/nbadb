@@ -63,6 +63,15 @@ def create_stg2_team(cur):
             team_id CHAR(10),
             team_abbreviation CHAR(3))
     """)
+
+def create_stg2_player(cur):
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS stg2_player(
+            player_key SERIAL PRIMARY KEY,
+            player_id INT, 
+            player_name CHAR(64))
+    """)
+
 def create_stg2_team_boxscore(cur):
     cur.execute("""
         CREATE TABLE IF NOT EXISTS stg2_team_boxscore(
@@ -126,6 +135,7 @@ create_stg1_loaded(cur)
 create_stg2_season(cur)
 create_stg2_game(cur)
 create_stg2_team(cur)
+create_stg2_player(cur)
 create_stg2_team_boxscore(cur)
 create_stg2_team_season_boxscore(cur)
 conn.commit()
